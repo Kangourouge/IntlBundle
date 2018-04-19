@@ -1,0 +1,18 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            $locales: '%krg_intl_locales%'
+            $defaultLocale: '%kernel.default_locale%'
+            Gedmo\Translatable\TranslatableListener: '@krg.translatable.listener'
+
+    KRG\IntlBundle\:
+        resource: '../../*'
+        public: true
+        exclude: '../../{Entity,Repository,Tests}'
+
+    krg.translatable.listener:
+        class: Gedmo\Translatable\TranslatableListener
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
