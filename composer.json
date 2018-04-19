@@ -1,0 +1,26 @@
+{
+  "name"       : "kangourouge/intl-bundle",
+  "description": "Kangourouge Intl Bundle",
+  "type"       : "symfony-bundle",
+  "license"    : "MIT",
+  "authors"    : [
+    {
+      "name" : "Chafiq El Mechrafi",
+      "email": "chafiq.elmechrafi@gmail.com"
+    },
+    {
+      "name" : "Hakim Kotni",
+      "email": "hakim.kotni@gmail.com"
+    }
+  ],
+  "require"    : {
+    "php"                     : "7.*",
+    "symfony/framework-bundle": "~2.1|~3.0"
+  },
+  "autoload"   : {
+    "psr-0": {
+      "KRG\\IntlBundle": ""
+    }
+  },
+  "target-dir" : "KRG/IntlBundle"
+}
