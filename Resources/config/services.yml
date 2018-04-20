@@ -16,3 +16,8 @@ services:
         class: Gedmo\Translatable\TranslatableListener
         tags:
             - { name: doctrine.event_subscriber, connection: default }
+        calls:
+            - [ setAnnotationReader, [ '@annotation_reader' ] ]
+            - [ setDefaultLocale, [ '%kernel.default_locale%' ] ]
+            - [ setTranslationFallback, [ true ] ]
+            - [ setPersistDefaultLocaleTranslation, [ true ]]
