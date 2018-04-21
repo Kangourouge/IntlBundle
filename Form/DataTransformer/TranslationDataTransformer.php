@@ -81,7 +81,7 @@ class TranslationDataTransformer implements DataTransformerInterface
         $translations = [];
         if ($this->entity && $this->field) {
             $_tanslations = $this->repository->findTranslations($this->entity);
-            $translations = array_map(function(array $data){ return $data[$this->field]; }, $_tanslations);
+            $translations = array_map(function(array $data){ return $data[$this->field] ?? null; }, $_tanslations);
         }
 
         return array_merge($data, $translations, [$this->defaultLocale => $value]);

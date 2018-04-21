@@ -10,8 +10,9 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormView;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
-abstract class AbstractTranslationType extends AbstractType
+class TranslationType extends AbstractType
 {
     /**
      * @var EntityManagerInterface
@@ -43,7 +44,7 @@ abstract class AbstractTranslationType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if (count($this->locales) === 0) {
+        if (count($this->locales) === 1) {
             return;
         }
 
@@ -58,7 +59,7 @@ abstract class AbstractTranslationType extends AbstractType
 
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
-        if (count($this->locales) === 0) {
+        if (count($this->locales) === 1) {
             return;
         }
 
@@ -74,7 +75,7 @@ abstract class AbstractTranslationType extends AbstractType
 
     public function getParent()
     {
-        if (count($this->locales) === 0) {
+        if (count($this->locales) === 1) {
             return $this->getExtendedType();
         }
 
@@ -84,17 +85,30 @@ abstract class AbstractTranslationType extends AbstractType
     public function onPostSetData(FormEvent $event)
     {
         $form = $event->getForm();
+        $options = $form->getConfig()->getOptions();
 
         $form->add('translations', TranslationCollectionType::class, [
-            'entry_type' => $this->getExtendedType(),
-            'entry_options' => [
-                'label' => false
-            ],
+            'entry_type' => $options['entry_type'],
+            'entry_options' => array_merge($options['entry_options'], ['label' => false]),
             'field' => $form->getName(),
             'entity' => $form->getParent()->getData(),
             'label' => false,
         ]);
     }
 
-    abstract public function getExtendedType();
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        parent::configureOptions($resolver);
+        $resolver->setRequired('entry_type');
+        $resolver->setRequired('entry_options');
+        $resolver->setAllowedTypes('entry_type', 'string');
+        $resolver->setAllowedTypes('entry_options', 'array');
+
+        $resolver->setDefault('entry_options', []);
+    }
+
+    public function getBlockPrefix()
+    {
+        return 'translation_widget';
+    }
 }

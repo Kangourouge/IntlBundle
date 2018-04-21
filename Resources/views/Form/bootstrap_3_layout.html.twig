@@ -1,6 +1,6 @@
 {% extends 'EasyAdminBundle:form:bootstrap_3_horizontal_layout.html.twig' %}
 
-{% block form_widget %}
+{% block translation_widget %}
     {% if form.vars.attr.lang is defined %}
         {%- set type = type|default('text') -%}
 
@@ -16,7 +16,7 @@
     {% else %}
         {{- parent() -}}
     {% endif %}
-{%- endblock form_widget %}
+{%- endblock translation_widget %}
 
 {%- block form_row -%}
     {% if form.vars.label is same as(false) %}
