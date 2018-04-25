@@ -1,0 +1,8 @@
+easy_admin:
+    design:
+        menu:
+            -
+                label: 'Intl'
+                roles: ['ROLE_INTL']
+                children:
+                    - { label: 'Translation', route: 'krg_intl_admin_edit', icon: 'globe' }

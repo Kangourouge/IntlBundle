@@ -42,9 +42,13 @@ class TranslationType extends AbstractType
         $this->defaultLocale = $defaultLocale;
     }
 
+    private function isTranslatable() {
+        return count($this->locales) > 1;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if (count($this->locales) === 1) {
+        if (!$this->isTranslatable()) {
             return;
         }
 
@@ -59,7 +63,7 @@ class TranslationType extends AbstractType
 
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
-        if (count($this->locales) === 1) {
+        if (!$this->isTranslatable()) {
             return;
         }
 
@@ -75,7 +79,7 @@ class TranslationType extends AbstractType
 
     public function getParent()
     {
-        if (count($this->locales) === 1) {
+        if (!$this->isTranslatable()) {
             return $this->getExtendedType();
         }
 
@@ -109,6 +113,6 @@ class TranslationType extends AbstractType
 
     public function getBlockPrefix()
     {
-        return 'translation_widget';
+        return 'translation';
     }
 }

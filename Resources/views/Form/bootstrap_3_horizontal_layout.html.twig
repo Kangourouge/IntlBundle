@@ -1,22 +1,26 @@
 {% extends 'EasyAdminBundle:form:bootstrap_3_horizontal_layout.html.twig' %}
 
 {% block translation_widget %}
-    {% if form.vars.attr.lang is defined %}
-        {%- set type = type|default('text') -%}
+    {% for child in form.translations %}
+        {{ form_widget(child) }}
+    {% endfor %}
+{% endblock translation_widget %}
 
+{%- block text_widget %}
+    {% if form.vars.attr.lang is defined %}
         <div class="input-group {% if form.vars.attr.lang != form.vars.attr.default_locale %}hidden{% endif %}">
             {% set attr = attr|merge({"aria-describedby" : form.vars.id ~ "_addon"}) %}
-            {{- parent() -}}
+
+            {{- block('form_widget_simple') -}}
 
             <div class="input-group-addon" id="{{ form.vars.id }}_addon">
                 <img src="{{ asset('/bundles/krgintl/images/flags/' ~ form.vars.attr.lang ~ '.svg') }}" width="30">
             </div>
         </div>
-
     {% else %}
-        {{- parent() -}}
+        {{- block('form_widget_simple') -}}
     {% endif %}
-{%- endblock translation_widget %}
+{%- endblock text_widget %}
 
 {%- block form_row -%}
     {% if form.vars.label is same as(false) %}
@@ -31,7 +35,6 @@
     {{ parent() }}
 
     {% if form.vars.locales is defined %}
-
 
         <div id="{{ form.vars.id }}_btn_group_locales" style="margin-bottom: 40px">
             <ul class="nav nav-fill nav-tabs">

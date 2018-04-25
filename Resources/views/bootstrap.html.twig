@@ -1,0 +1,19 @@
+{% block intl %}
+    {% if nodes|length > 0 %}
+        <nav class="navbar">
+            <ul class="navbar-nav navbar-intl">
+                {% for node in nodes %}
+                    {% if node.roles|length == 0 or is_granted_roles(node.roles) %}
+                        {{ block('intl_node') }}
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+{% endblock %}
+
+{% block intl_node %}
+    <li class="navbar-item {% if node.active %}active{% endif %}">
+        <a class="navbar-link" lang="{{ node.locale }}" href="{{ node.url }}">{{ node.name }}</a>
+    </li>
+{% endblock %}

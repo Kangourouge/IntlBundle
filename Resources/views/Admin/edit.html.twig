@@ -1,0 +1,10 @@
+{% extends '@EasyAdmin/default/layout.html.twig' %}
+{% form_theme form 'bootstrap_3_horizontal_layout.html.twig' %}
+
+{% block content_title %}
+    <span class="fa fa-globe"></span> {{ 'Translation'|trans }}
+{% endblock %}
+
+{% block main %}
+    {{ form(form) }}
+{% endblock %}

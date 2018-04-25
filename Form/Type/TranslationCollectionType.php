@@ -78,9 +78,4 @@ class TranslationCollectionType extends AbstractType
         $resolver->setAllowedTypes('entry_options', 'array');
         $resolver->setAllowedTypes('field', 'string');
     }
-
-    public function getBlockPrefix()
-    {
-        return 'translation_collection';
-    }
 }
