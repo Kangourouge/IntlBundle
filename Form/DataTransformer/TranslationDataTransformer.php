@@ -79,7 +79,7 @@ class TranslationDataTransformer implements DataTransformerInterface
         $data = $this->getDefaultData();
 
         $translations = [];
-        if ($this->entity && $this->field) {
+        if ($this->entity && $this->field && count($this->locales) > 1) {
             $_tanslations = $this->repository->findTranslations($this->entity);
             $translations = array_map(function(array $data){ return $data[$this->field] ?? null; }, $_tanslations);
         }
@@ -89,12 +89,14 @@ class TranslationDataTransformer implements DataTransformerInterface
 
     public function reverseTransform($data)
     {
-        $this->translatableListener->setDefaultLocale($this->defaultLocale);
-        $this->translatableListener->setPersistDefaultLocaleTranslation(true);
+        if (count($this->locales) > 1) {
+            $this->translatableListener->setDefaultLocale($this->defaultLocale);
+            $this->translatableListener->setPersistDefaultLocaleTranslation(true);
 
-        foreach ($data as $locale => $value) {
-            if ($locale != $this->defaultLocale) {
-                $this->repository->translate($this->entity, $this->field, $locale, $value);
+            foreach ($data as $locale => $value) {
+                if ($locale != $this->defaultLocale) {
+                    $this->repository->translate($this->entity, $this->field, $locale, $value);
+                }
             }
         }
 

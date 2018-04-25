@@ -30,6 +30,11 @@ class TranslationType extends AbstractType
     private $defaultLocale;
 
     /**
+     * @var string
+     */
+    private $extendedType;
+
+    /**
      * AbstractTranslationType constructor.
      * @param EntityManagerInterface $entityManager
      * @param array $locales
@@ -42,16 +47,8 @@ class TranslationType extends AbstractType
         $this->defaultLocale = $defaultLocale;
     }
 
-    private function isTranslatable() {
-        return count($this->locales) > 1;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        if (!$this->isTranslatable()) {
-            return;
-        }
-
         $builder->addEventListener(FormEvents::POST_SET_DATA, [$this, 'onPostSetData']);
         $builder->addModelTransformer(new CallbackTransformer(
             function($value) { return ['translations' => $value]; },
@@ -63,10 +60,6 @@ class TranslationType extends AbstractType
 
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
-        if (!$this->isTranslatable()) {
-            return;
-        }
-
         parent::finishView($view, $form, $options);
         $rootFormView = $this->getRootFormView($view);
         $rootFormView->vars['locales'] = $this->locales;
@@ -75,15 +68,6 @@ class TranslationType extends AbstractType
 
     private function getRootFormView(FormView $view) {
         return $view->parent === null ? $view : $this->getRootFormView($view->parent);
-    }
-
-    public function getParent()
-    {
-        if (!$this->isTranslatable()) {
-            return $this->getExtendedType();
-        }
-
-        return parent::getParent();
     }
 
     public function onPostSetData(FormEvent $event)
@@ -103,6 +87,7 @@ class TranslationType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
+
         $resolver->setRequired('entry_type');
         $resolver->setRequired('entry_options');
         $resolver->setAllowedTypes('entry_type', 'string');

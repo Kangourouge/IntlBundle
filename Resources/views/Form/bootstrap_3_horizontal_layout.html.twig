@@ -34,7 +34,7 @@
 
     {{ parent() }}
 
-    {% if form.vars.locales is defined %}
+    {% if form.vars.locales is defined and form.vars.locales|length > 1 %}
 
         <div id="{{ form.vars.id }}_btn_group_locales" style="margin-bottom: 40px">
             <ul class="nav nav-fill nav-tabs">
