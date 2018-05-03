@@ -5,7 +5,7 @@ services:
         bind:
             $locales: '%krg_intl_locales%'
             $defaultLocale: '%kernel.default_locale%'
-            $translatableListener: '@gedmo.listener.translatable'
+            $translatableListener: '@stof_doctrine_extensions.listener.translatable'
 
     KRG\IntlBundle\:
         resource: '../../*'
@@ -15,22 +15,3 @@ services:
     KRG\IntlBundle\Twig\:
         resource: '../../Twig/*'
         tags: [twig.extension]
-
-#    krg.translatable.listener:
-#        class: Gedmo\Translatable\TranslatableListener
-#        tags:
-#            - { name: doctrine.event_subscriber, connection: default }
-#        calls:
-#            - [ setAnnotationReader, [ '@annotation_reader' ] ]
-#            - [ setDefaultLocale, [ '%kernel.default_locale%' ] ]
-#            - [ setTranslationFallback, [ true ] ]
-            # - [ setPersistDefaultLocaleTranslation, [ true ]]
-
-    gedmo.listener.translatable:
-        class: Gedmo\Translatable\TranslatableListener
-        tags:
-            - { name: doctrine.event_subscriber, connection: default }
-        calls:
-            - [ setAnnotationReader, [ '@annotation_reader' ] ]
-            - [ setDefaultLocale, [ '%locale%' ] ]
-            - [ setTranslationFallback, [ true ] ]

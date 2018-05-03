@@ -36,6 +36,7 @@ class IntlExtension extends \Twig_Extension
         $_locale = $this->request->getLocale();
         foreach ($this->locales as $locale) {
             $routeName = $this->request->get('_route');
+            // TODO: clean params
             $routeParams = array_merge($this->request->get('_route_params'), ['_locale' => $locale]);
             $nodes[] = [
                 'route'  => [
