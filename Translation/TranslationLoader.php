@@ -49,20 +49,26 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
 
     public function warmUp($cacheDir)
     {
-        $repository = $this->entityManager->getRepository(TranslationInterface::class);
+        try {
+            $repository = $this->entityManager->getRepository(TranslationInterface::class);
 
-        $dql = $this->entityManager->createQuery(sprintf(
-            'SELECT DISTINCT t.locale, t.field FROM %s t WHERE t.objectClass=:objectClass',
-            TranslationInterface::class
-        ));
+            $dql = $this->entityManager->createQuery(
+                sprintf(
+                    'SELECT DISTINCT t.locale, t.field FROM %s t WHERE t.objectClass=:objectClass',
+                    TranslationInterface::class
+                )
+            );
 
-        $rows = $dql->execute(['objectClass' => '_source']);
+            $rows = $dql->execute(['objectClass' => '_source']);
 
-        foreach($rows as $row) {
-            $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
-            $fd = fopen($filename, 'w');
-            fwrite($fd, '-- empty line --' . PHP_EOL);
-            fclose($fd);
+            foreach ($rows as $row) {
+                $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
+                $fd = fopen($filename, 'w');
+                fwrite($fd, '-- empty line --'.PHP_EOL);
+                fclose($fd);
+            }
+        } catch (\Exception $exception) {
+            // TODO handle exception
         }
     }
 
@@ -73,23 +79,29 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
 
     public function load($resource, $locale, $domain = 'messages')
     {
-        $repository = $this->entityManager->getRepository(TranslationInterface::class);
+        try {
+            $repository = $this->entityManager->getRepository(TranslationInterface::class);
 
-        $dql = $this->entityManager->createQuery(sprintf(
-            'SELECT t.foreignTextKey, t.content
+            $dql = $this->entityManager->createQuery(
+                sprintf(
+                    'SELECT t.foreignTextKey, t.content
                 FROM %s t
                 WHERE t.objectClass=:objectClass
                 AND t.locale=:locale
                 AND t.field=:field',
-            TranslationInterface::class
-        ));
+                    TranslationInterface::class
+                )
+            );
 
-        $rows = $dql->execute(['locale' => $locale, 'objectClass' => '_source', 'field' => $domain]);
-        $messages = array_column($rows, 'content', 'foreignTextKey');
+            $rows = $dql->execute(['locale' => $locale, 'objectClass' => '_source', 'field' => $domain]);
+            $messages = array_column($rows, 'content', 'foreignTextKey');
 
-        $messageCatalogue = new MessageCatalogue($locale);
-        $messageCatalogue->add($messages, $domain);
+            $messageCatalogue = new MessageCatalogue($locale);
+            $messageCatalogue->add($messages, $domain);
 
-        return $messageCatalogue;
+            return $messageCatalogue;
+        } catch (\Exception $exception) {
+            // TODO handle exception
+        }
     }
 }
