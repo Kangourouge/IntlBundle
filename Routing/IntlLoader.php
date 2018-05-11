@@ -43,7 +43,7 @@ class IntlLoader extends Loader
         /** @var Route $routeClone */
         /** @var Route $routeRedirect */
         foreach($baseCollection as $name => $route) {
-            if (preg_match('/^_|liip/', $name)) {
+            if (preg_match('/^_|liip/', $name) || preg_match('/\{_locale\}/', $route->getPath())) {
                 $collection->add($name, $route);
                 continue;
             }
