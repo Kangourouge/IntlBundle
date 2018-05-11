@@ -6,7 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * @ORM\MappedSuperclass
+ * @ORM\MappedSuperclass(repositoryClass="Gedmo\Translatable\Entity\Repository\TranslationRepository")
  */
 class Translation extends \Gedmo\Translatable\Entity\Translation implements TranslationInterface
 {
