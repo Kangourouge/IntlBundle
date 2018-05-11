@@ -60,7 +60,7 @@ class TranslationCollectionType extends AbstractType
         foreach ($this->locales as $locale) {
             $builder->add($locale, $options['entry_type'], array_merge(
                 $options['entry_options'],
-                $locale !== $this->defaultLocale ? ['required' => true] : [],
+                $locale !== $this->defaultLocale ? ['required' => false] : [],
                 ['attr' => ['lang' => $locale, 'default_locale' => $this->defaultLocale]]
             ));
         }

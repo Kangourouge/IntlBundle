@@ -2,6 +2,7 @@
 
 namespace KRG\IntlBundle\Twig;
 
+use KRG\CmsBundle\Entity\SeoInterface;
 use KRG\CmsBundle\Menu\MenuBuilderInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
@@ -33,11 +34,29 @@ class IntlExtension extends \Twig_Extension
     public function render(\Twig_Environment $environment, $theme = 'KRGIntlBundle::bootstrap.html.twig')
     {
         $nodes = [];
+
         $_locale = $this->request->getLocale();
+
+        $routeName = $this->request->get('_route');
+        $routeParams = $this->request->get('_route_params');
+
+        $_seo = $this->request->get('_seo');
+        if ($_seo instanceof SeoInterface) {
+            $routeName = $_seo->getUid();
+            $routeParams = [];
+        }
+
+        /* clean route parameters */
+        foreach ($routeParams as $key => $value) {
+            if (preg_match('/^_/', $key)) {
+                unset($routeParams[$key]);
+            }
+        }
+
         foreach ($this->locales as $locale) {
-            $routeName = $this->request->get('_route');
-            // TODO: clean params
-            $routeParams = array_merge($this->request->get('_route_params'), ['_locale' => $locale]);
+
+            $routeParams = array_merge($routeParams, ['_locale' => $locale]);
+
             $nodes[] = [
                 'route'  => [
                     'name'   => $routeName,

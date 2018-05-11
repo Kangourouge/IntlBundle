@@ -5,4 +5,4 @@ easy_admin:
                 label: 'Intl'
                 roles: ['ROLE_INTL']
                 children:
-                    - { label: 'Translation', route: 'krg_intl_admin_edit', icon: 'globe' }
+                    - { label: 'Translation', route: 'krg_intl_admin_import', icon: 'globe' }

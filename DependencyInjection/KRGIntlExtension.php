@@ -26,5 +26,23 @@ class KRGIntlExtension extends Extension
         $loader->load('services.yml');
 
         $container->setParameter('krg_intl_locales', array_merge(['%kernel.default_locale%'], $config['locales']));
+        $container->setParameter('krg_intl_cache_dir', $config['cache_dir']);
+
+        $cacheDir = preg_replace('/%kernel\.cache_dir%/', $container->getParameter('kernel.cache_dir'), $config['cache_dir']);
+
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0775, true);
+
+            $bundleNames = array_keys($container->getParameter('kernel.bundles'));
+            array_push($bundleNames, 'messages');
+
+            foreach ($bundleNames as $bundleName) {
+                foreach ($config['locales'] as $locale) {
+                    $filename = sprintf('%s/%s.%s.db', $cacheDir, $bundleName, $locale);
+                    touch($filename);
+                }
+            }
+        }
+
     }
 }

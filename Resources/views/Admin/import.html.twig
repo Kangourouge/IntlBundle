@@ -6,5 +6,12 @@
 {% endblock %}
 
 {% block main %}
+    <h2>{{ 'Import'|trans }}</h2>
+    <hr>
     {{ form(form) }}
+    <h2>{{ 'Export'|trans }}</h2>
+    <hr>
+    <a href="{{ path('krg_intl_admin_export') }}" class="btn btn-info">
+        {{ 'Export translations'|trans }}
+    </a>
 {% endblock %}

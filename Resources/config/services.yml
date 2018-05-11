@@ -6,12 +6,32 @@ services:
             $locales: '%krg_intl_locales%'
             $defaultLocale: '%kernel.default_locale%'
             $translatableListener: '@stof_doctrine_extensions.listener.translatable'
+            $extractor: '@twig.translation.extractor'
+            $translationCacheDir: '%krg_intl_cache_dir%'
 
     KRG\IntlBundle\:
         resource: '../../*'
         public: true
         exclude: '../../{Entity,Repository,Tests}'
 
+    KRG\IntlBundle\Entity\Manager\:
+        resource: '../../Entity/Manager'
+        public: true
+
+    KRG\IntlBundle\Controller\:
+        resource: '../../Controller'
+        public: true
+        tags: ['controller.service_arguments']
+
+    KRG\IntlBundle\Translation\TranslationLoader:
+        tags:
+            - kernel.cache_clearer
+            - kernel.cache_warmer
+            - { name: translation.loader, alias: db }
+
     KRG\IntlBundle\Twig\:
         resource: '../../Twig/*'
-        tags: [twig.extension]
+        tags: ['twig.extension']
+
+    KRG\IntlBundle\Routing\IntlLoader:
+        tags: ['routing.loader']
