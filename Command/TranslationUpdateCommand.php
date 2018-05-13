@@ -4,6 +4,7 @@ namespace KRG\IntlBundle\Command;
 
 use KRG\IntlBundle\Entity\Manager\TranslationManager;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,11 +28,21 @@ class TranslationUpdateCommand extends Command
 
     protected function configure()
     {
-        $this->setName('krg:intl:update');
+        $defaultDest = sprintf('%s/translations_%s.csv', getcwd(), date('Y-m-d'));
+
+        $this->setName('krg:intl:dump')
+                ->addArgument('dest', InputArgument::OPTIONAL, 'Destination CSV file path', $defaultDest);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->translationManager->dump();
+        /** @var \SplFileInfo $fileInfo */
+        $fileInfo = $this->translationManager->export();
+
+        if (@copy($fileInfo->getRealPath(), $dest=$input->getArgument('dest'))) {
+            $output->writeln(sprintf('<info>You can find translations file dump in "%s".</info>', $dest));
+        } else {
+            $output->writeln(sprintf('<error>Unable to save translations file dump in "%s".</error>', $dest));
+        }
     }
 }

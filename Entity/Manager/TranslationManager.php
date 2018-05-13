@@ -176,16 +176,6 @@ class TranslationManager
         return $fileInfo;
     }
 
-    public function dump()
-    {
-        $tableName = $this->classMetadata->getTableName();
-        $conn = $this->entityManager->getConnection();
-
-        $rows = $this->loadSourceTranslations($conn, $tableName);
-
-        $rows = array_values($rows);
-    }
-
     /**
      * @return array
      * @throws \Doctrine\Common\Annotations\AnnotationException
