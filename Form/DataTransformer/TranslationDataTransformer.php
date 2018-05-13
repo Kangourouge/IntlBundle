@@ -61,6 +61,9 @@ class TranslationDataTransformer implements DataTransformerInterface
         $this->field = $field;
         $this->locales = $locales;
         $this->defaultLocale = $defaultLocale;
+
+        $this->translatableListener->setTranslatableLocale($this->defaultLocale);
+        $this->translatableListener->setPersistDefaultLocaleTranslation(true);
     }
 
     public function getDefaultData() {
