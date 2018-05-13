@@ -14,14 +14,14 @@ services:
         public: true
         exclude: '../../{Entity,Repository,Tests}'
 
-    KRG\IntlBundle\Entity\Manager\:
-        resource: '../../Entity/Manager'
-        public: true
-
     KRG\IntlBundle\Controller\:
         resource: '../../Controller'
         public: true
         tags: ['controller.service_arguments']
+
+    KRG\IntlBundle\Translation\:
+        resource: '../../Translation'
+        public: true
 
     KRG\IntlBundle\Translation\TranslationLoader:
         tags:

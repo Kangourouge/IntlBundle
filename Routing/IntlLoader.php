@@ -5,7 +5,6 @@ namespace KRG\IntlBundle\Routing;
 use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Routing\RouterInterface;
 
 class IntlLoader extends Loader
 {

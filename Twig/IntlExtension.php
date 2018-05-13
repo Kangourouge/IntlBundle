@@ -3,7 +3,6 @@
 namespace KRG\IntlBundle\Twig;
 
 use KRG\CmsBundle\Entity\SeoInterface;
-use KRG\CmsBundle\Menu\MenuBuilderInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
 

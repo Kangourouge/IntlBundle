@@ -1,13 +1,13 @@
 <?php
 
-namespace KRG\IntlBundle\Entity\Manager;
+namespace KRG\IntlBundle\Translation;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Gedmo\Translatable\Translatable;
 use KRG\IntlBundle\Entity\TranslationInterface;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Translation\Catalogue\MergeOperation;
@@ -165,13 +165,14 @@ class TranslationManager
 
         $rows = array_values($rows);
 
-        $fileInfo = new \SplFileInfo(tempnam(sys_get_temp_dir(), 'intl_translation_export_'));
+        $fileInfo = new \SplFileInfo(sprintf('%s/intl_translation_export_%s.csv', sys_get_temp_dir(), uniqid()));
 
-        $fd = $fileInfo->openFile('w');
-        $fd->fputcsv(self::$header);
+        $fileObject = $fileInfo->openFile('w');
+        $fileObject->fputcsv(self::$header);
         foreach ($rows as $row) {
-            $fd->fputcsv($row);
+            $fileObject->fputcsv($row);
         }
+        $fileObject = null;
 
         return $fileInfo;
     }

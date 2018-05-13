@@ -3,7 +3,6 @@
 namespace KRG\IntlBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\MappedSuperclass(repositoryClass="Gedmo\Translatable\Entity\Repository\TranslationRepository")

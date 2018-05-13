@@ -6,10 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use KRG\IntlBundle\Entity\TranslationInterface;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
-use Symfony\Component\Translation\Exception\InvalidResourceException;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
-use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Loader\LoaderInterface;
+use Symfony\Component\Translation\MessageCatalogue;
 
 class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheClearerInterface
 {
