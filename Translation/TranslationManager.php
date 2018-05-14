@@ -122,27 +122,29 @@ class TranslationManager
                 $conn = $this->entityManager->getConnection();
                 $conn->beginTransaction();
 
-                $tableName = $this->classMetadata->getTableName();
+                try {
+                    $tableName = $this->classMetadata->getTableName();
 
-                $rows = $this->loadTranslations($conn, $tableName);
+                    $rows = $this->loadTranslations($conn, $tableName);
 
-                while (($data = fgetcsv($handle, 0, ",")) !== false) {
-                    if (count($data) !== 5) {
-                        throw new \InvalidArgumentException('CSV not valid');
+                    while (($data = fgetcsv($handle, 0, ",")) !== false) {
+                        if (count($data) !== 5) {
+                            throw new \InvalidArgumentException('CSV not valid');
+                        }
+                        list($locale, $objectClass, $field, $foreignKey, $content) = $data;
+                        $foreignTextKey = $foreignKey;
+
+                        if ($objectClass === '_source') {
+                            $foreignKey = sha1($foreignKey);
+                        }
+
+                        $this->insertOrUpdate($conn, $rows, $tableName, $locale, $objectClass, $field, $foreignKey, $foreignTextKey, $content);
                     }
-                    list($locale, $objectClass, $field, $foreignKey, $content) = $data;
-                    $foreignTextKey = $foreignKey;
-
-                    if ($objectClass === '_source') {
-                        $foreignKey = sha1($foreignKey);
-                    }
-
-                    $this->insertOrUpdate($conn, $rows, $tableName, $locale, $objectClass, $field, $foreignKey, $foreignTextKey, $content);
+                    $conn->commit();
+                } catch (\Exception $exception) {
+                    $conn->rollBack();
+                    throw $exception;
                 }
-                $conn->commit();
-            } catch (\Exception $exception) {
-                $conn->rollBack();
-                throw $exception;
             } finally {
                 fclose($handle);
             }
@@ -239,8 +241,8 @@ class TranslationManager
         foreach ($data as $_data) {
             if ($_data['object_class'] === '_source') {
                 $_data['foreign_key'] = $_data['foreign_text_key'];
-                unset($_data['foreign_text_key']);
             }
+            unset($_data['foreign_text_key']);
             $rows[self::getKey($_data)] = $_data;
         }
 
@@ -262,12 +264,12 @@ class TranslationManager
     private function insertOrUpdate(Connection $conn, array &$rows, $tableName, $locale, $objectClass, $field, $foreignKey, $foreignTextKey, $content)
     {
         $data = [
-            'locale'       => $locale,
-            'object_class' => $objectClass,
-            'field'        => $field,
-            'foreign_key'  => $foreignKey,
-            'foreign_text_key'  => $foreignTextKey,
-            'content'      => $content,
+            'locale'           => $locale,
+            'object_class'     => $objectClass,
+            'field'            => $field,
+            'foreign_key'      => $foreignKey,
+            'foreign_text_key' => $foreignTextKey,
+            'content'          => $content,
         ];
 
         $key = self::getKey($data);
@@ -277,12 +279,13 @@ class TranslationManager
             if ($conn->insert($tableName, $data)) {
                 return true;
             }
+
             return false;
         }
 
         unset($data['content']);
 
-        return (bool) $conn->update($tableName, ['content' => $content], $data);
+        return (bool)$conn->update($tableName, ['content' => $content], $data);
     }
 
     /**
@@ -391,7 +394,8 @@ class TranslationManager
             if (is_dir($path)) {
                 try {
                     $this->extractor->extract($path, $extractedCatalogue);
-                } catch (\Exception $exception) {}
+                } catch (\Exception $exception) {
+                }
             }
         }
 
@@ -411,7 +415,8 @@ class TranslationManager
             if (is_dir($path)) {
                 try {
                     $this->reader->read($path, $currentCatalogue);
-                } catch (\Exception $exception) {}
+                } catch (\Exception $exception) {
+                }
             }
         }
 
