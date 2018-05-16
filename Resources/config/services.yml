@@ -34,4 +34,5 @@ services:
         tags: ['twig.extension']
 
     KRG\IntlBundle\Routing\IntlLoader:
-        tags: ['routing.loader']
+        tags:
+            - 'routing.loader'

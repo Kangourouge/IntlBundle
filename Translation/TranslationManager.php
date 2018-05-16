@@ -243,6 +243,7 @@ class TranslationManager
                 $_data['foreign_key'] = $_data['foreign_text_key'];
             }
             unset($_data['foreign_text_key']);
+            unset($_data['id']);
             $rows[self::getKey($_data)] = $_data;
         }
 
