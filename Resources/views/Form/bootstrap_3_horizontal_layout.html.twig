@@ -23,7 +23,7 @@
 {%- endblock text_widget %}
 
 {%- block textarea_widget %}
-    {% if form.vars.attr.lang is defined %}
+    {% if form.vars.attr.lang is defined and attr.style != "display:none;" %}
         <div class="input-group {% if form.vars.attr.lang != form.vars.attr.default_locale %}hidden{% endif %}">
             {% set attr = attr|merge({"aria-describedby" : form.vars.id ~ "_addon"}) %}
 
