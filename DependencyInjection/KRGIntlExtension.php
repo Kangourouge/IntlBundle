@@ -23,26 +23,27 @@ class KRGIntlExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.yml');
+        $loader->load($config['legacy'] ? 'services_legacy.yml' : 'services.yml');
 
         $container->setParameter('krg_intl_locales', array_merge(['%kernel.default_locale%'], $config['locales']));
         $container->setParameter('krg_intl_cache_dir', $config['cache_dir']);
 
-        $cacheDir = preg_replace('/%kernel\.cache_dir%/', $container->getParameter('kernel.cache_dir'), $config['cache_dir']);
+        if (!$config['legacy']) {
+            $cacheDir = preg_replace('/%kernel\.cache_dir%/', $container->getParameter('kernel.cache_dir'), $config['cache_dir']);
 
-        if (!is_dir($cacheDir)) {
-            @mkdir($cacheDir, 0775, true);
+            if (!is_dir($cacheDir)) {
+                @mkdir($cacheDir, 0775, true);
 
-            $bundleNames = array_keys($container->getParameter('kernel.bundles'));
-            array_push($bundleNames, 'messages');
+                $bundleNames = array_keys($container->getParameter('kernel.bundles'));
+                array_push($bundleNames, 'messages');
 
-            foreach ($bundleNames as $bundleName) {
-                foreach ($config['locales'] as $locale) {
-                    $filename = sprintf('%s/%s.%s.db', $cacheDir, $bundleName, $locale);
-                    touch($filename);
+                foreach ($bundleNames as $bundleName) {
+                    foreach ($config['locales'] as $locale) {
+                        $filename = sprintf('%s/%s.%s.db', $cacheDir, $bundleName, $locale);
+                        touch($filename);
+                    }
                 }
             }
         }
-
     }
 }

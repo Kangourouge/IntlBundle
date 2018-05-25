@@ -25,6 +25,7 @@ class Configuration implements ConfigurationInterface
                 ->prototype('scalar')->end()
                 ->defaultValue([])
             ->end()
+            ->booleanNode('legacy')->defaultValue(false)->end()
             ->scalarNode('cache_dir')->defaultValue('%kernel.cache_dir%/krg/translations')->end();
 
         return $treeBuilder;

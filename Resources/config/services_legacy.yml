@@ -1,0 +1,36 @@
+services:
+    KRG\IntlBundle\Controller\AdminController:
+        class: 'KRG\IntlBundle\Controller\AdminController'
+        tags: [{ name: 'controller.service_arguments' }]
+
+    KRG\IntlBundle\Form\Type\TranslationType:
+        class: 'KRG\IntlBundle\Form\Type\TranslationType'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '%krg_intl_locales%'
+            - '%kernel.default_locale%'
+        tags:
+            - { name: 'form.type' }
+
+    KRG\IntlBundle\Form\Type\TranslationCollectionType:
+        class: 'KRG\IntlBundle\Form\Type\TranslationCollectionType'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '@stof_doctrine_extensions.listener.translatable'
+            - '%krg_intl_locales%'
+            - '%kernel.default_locale%'
+        tags:
+            - { name: 'form.type' }
+
+    KRG\IntlBundle\Translation\TranslationLoader:
+        class: 'KRG\IntlBundle\Translation\TranslationLoader'
+        arguments:
+            - '@doctrine.orm.entity_manager'
+            - '%krg_intl_locales%'
+            - '%krg_intl_cache_dir%'
+
+    KRG\IntlBundle\Translation\TranslationLoader:
+        tags:
+            - { name: 'kernel.cache_clearer' }
+            - { name: 'kernel.cache_warmer' }
+            - { name: 'translation.loader', alias: 'db' }
