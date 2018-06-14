@@ -83,37 +83,49 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
     protected function processTranslatedRoutes(Route $route, string $name)
     {
         $translatableRepository = $this->entityManager->getRepository(Translation::class);
+        $seoRepository = $this->entityManager->getRepository(SeoInterface::class);
         $locales = array_combine($this->locales, $this->locales);
 
+        if ($name === 'krg_page_show') {
+            return $locales;
+        }
+
+        $seos = [];
         if ($route->hasDefault('_seo_list')) {
             $seos = $route->getDefault('_seo_list');
-            foreach ($seos as $seo) {
+        } elseif ($route->hasDefault('_page_seo_id')) {
+            $seos = [$seoRepository->find($route->getDefault('_page_seo_id'))];
+        }
+
+        foreach ($seos as $seo) {
+            if (is_string($seo)) {
                 $seo = $this->serializer->deserialize($seo, $this->seoClass, 'json');
+            }
 
-                // Find custom Seo urls by locale
-                if ($translations = $translatableRepository->findTranslations($seo)) {
-                    foreach ($this->locales as $locale) {
-                        $defaultPath = sprintf('/%s%s', $locale, $route->getPath());
+            // Find custom Seo urls by locale
+            if ($translations = $translatableRepository->findTranslations($seo)) {
+                foreach ($this->locales as $locale) {
+                    $defaultPath = sprintf('/%s%s', $locale, $route->getPath());
 
-                        if (($url = ($translations[$locale]['url'] ?? null)) && $url !== $route->getPath()) {
-                            $defaults = ['_canonical_route' => $name, '_locale' => $locale];
-                            $requirements = ['_locale' => $locale];
-                            $localizedRoute = $this->cloneRoute($route, $url, $defaults, $requirements);
+                    if (($url = ($translations[$locale]['url'] ?? null)) && $url !== $route->getPath()) {
+                        $defaults = ['_canonical_route' => $name, '_locale' => $locale];
+                        $requirements = ['_locale' => $locale];
+                        $localizedRoute = $this->cloneRoute($route, $url, $defaults, $requirements);
 
-                            $this->routes[$name.'.'.$locale.'.redirect'] = $this
-                                ->cloneRoute($localizedRoute, $defaultPath)
-                                ->setDefaults([
-                                    '_controller' => 'FrameworkBundle:Redirect:redirect',
-                                    'route'       => $name.'.'.$locale,
-                                    '_locale'     => $locale,
-                                    // 'permanent'   => true,
-                                ])
-                                ->setRequirements(['_locale' => $locale]);
+                        $this->routes[$name.'.'.$locale.'.redirect'] = $this
+                            ->cloneRoute($localizedRoute, $defaultPath)
+                            ->setDefaults([
+                                '_controller' => 'FrameworkBundle:Redirect:redirect',
+                                'route'       => $name.'.'.$locale,
+                                '_locale'     => $locale,
+                                // 'permanent'   => true,
+                            ])
+                            ->setRequirements(['_locale' => $locale]);
 
-                            $route->setOption('_seo_rewritted_url', true);
-                            $this->routes[$name.'.'.$locale] = $localizedRoute;
-                            unset($locales[$locale]); // Localized route successfuly created
-                        }
+                        $route->addDefaults(['_force_rewritte' => true]);
+                        $this->routes[$name.'.'.$locale] = $localizedRoute;
+
+                        unset($locales[$locale]); // Localized route successfuly created
                     }
                 }
             }

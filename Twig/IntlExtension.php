@@ -32,7 +32,7 @@ class IntlExtension extends \Twig_Extension
         $routeName = $this->request->get('_route');
         $routeParams = $this->request->get('_route_params');
         $_seo = $this->request->get('_seo');
-        if ($_seo instanceof SeoInterface) {
+        if ($_seo instanceof SeoInterface and $_seo->getRouteName() === 'krg_page_show') {
             $routeName = $_seo->getUid();
             $routeParams = [];
         }
