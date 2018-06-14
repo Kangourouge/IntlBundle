@@ -93,8 +93,8 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
         $seos = [];
         if ($route->hasDefault('_seo_list')) {
             $seos = $route->getDefault('_seo_list');
-        } elseif ($route->hasDefault('_page_seo_id')) {
-            $seos = [$seoRepository->find($route->getDefault('_page_seo_id'))];
+        } elseif ($route->hasDefault('_seo_id')) {
+            $seos = [$seoRepository->find($route->getDefault('_seo_id'))];
         }
 
         foreach ($seos as $seo) {
@@ -108,7 +108,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
                     $defaultPath = sprintf('/%s%s', $locale, $route->getPath());
 
                     if (($url = ($translations[$locale]['url'] ?? null)) && $url !== $route->getPath()) {
-                        $defaults = ['_canonical_route' => $name, '_locale' => $locale];
+                        $defaults = ['_canonical_route' => $name, '_locale' => $locale, '_seo_id' =>  $seo->getId()];
                         $requirements = ['_locale' => $locale];
                         $localizedRoute = $this->cloneRoute($route, $url, $defaults, $requirements);
 
