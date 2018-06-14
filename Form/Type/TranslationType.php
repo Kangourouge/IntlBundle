@@ -14,32 +14,15 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TranslationType extends AbstractType
 {
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $locales;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultLocale;
 
-    /**
-     * @var string
-     */
-    private $extendedType;
-
-    /**
-     * AbstractTranslationType constructor.
-     * @param EntityManagerInterface $entityManager
-     * @param array $locales
-     * @param string $defaultLocale
-     */
     public function __construct(EntityManagerInterface $entityManager, array $locales, $defaultLocale)
     {
         $this->entityManager = $entityManager;
@@ -66,7 +49,8 @@ class TranslationType extends AbstractType
         $rootFormView->vars['default_locale'] = $this->defaultLocale;
     }
 
-    private function getRootFormView(FormView $view) {
+    private function getRootFormView(FormView $view)
+    {
         return $view->parent === null ? $view : $this->getRootFormView($view->parent);
     }
 
@@ -76,11 +60,11 @@ class TranslationType extends AbstractType
         $options = $form->getConfig()->getOptions();
 
         $form->add('translations', TranslationCollectionType::class, [
-            'entry_type' => $options['entry_type'],
+            'entry_type'    => $options['entry_type'],
             'entry_options' => array_merge($options['entry_options'], ['label' => false]),
-            'field' => $form->getName(),
-            'entity' => $form->getParent()->getData(),
-            'label' => false,
+            'field'         => $form->getName(),
+            'entity'        => $form->getParent()->getData(),
+            'label'         => false,
         ]);
     }
 
@@ -92,7 +76,6 @@ class TranslationType extends AbstractType
         $resolver->setRequired('entry_options');
         $resolver->setAllowedTypes('entry_type', 'string');
         $resolver->setAllowedTypes('entry_options', 'array');
-
         $resolver->setDefault('entry_options', []);
     }
 
