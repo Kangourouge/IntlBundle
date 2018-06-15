@@ -2,56 +2,33 @@
 
 namespace KRG\IntlBundle\Form\DataTransformer;
 
-
 use Doctrine\ORM\EntityManagerInterface;
 use Gedmo\Translatable\Entity\Repository\TranslationRepository;
 use Gedmo\Translatable\Entity\Translation;
 use Gedmo\Translatable\Translatable;
 use Gedmo\Translatable\TranslatableListener;
 use Symfony\Component\Form\DataTransformerInterface;
-use Symfony\Component\Form\Exception\TransformationFailedException;
 
 class TranslationDataTransformer implements DataTransformerInterface
 {
-
-    /**
-     * @var TranslatableListener
-     */
+    /** @var TranslatableListener */
     private $translatableListener;
 
-    /**
-     * @var TranslationRepository
-     */
+    /** @var TranslationRepository */
     private $repository;
 
-    /**
-     * @var Translatable
-     */
+    /** @var Translatable */
     private $entity;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $field;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $locales;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultLocale;
 
-    /**
-     * TranslationDataTransformer constructor.
-     * @param EntityManagerInterface $entityManager
-     * @param array $locales
-     * @param $defaultLocale
-     * @param Translatable|null $entity
-     * @param null $field
-     */
     public function __construct(EntityManagerInterface $entityManager, TranslatableListener $translatableListener, array $locales, $defaultLocale, Translatable $entity = null, $field = null)
     {
         /** @var TranslationRepository $repository */
@@ -61,12 +38,12 @@ class TranslationDataTransformer implements DataTransformerInterface
         $this->field = $field;
         $this->locales = $locales;
         $this->defaultLocale = $defaultLocale;
-
         $this->translatableListener->setTranslatableLocale($this->defaultLocale);
         $this->translatableListener->setPersistDefaultLocaleTranslation(true);
     }
 
-    public function getDefaultData() {
+    public function getDefaultData()
+    {
         $data = [$this->defaultLocale => null];
         foreach ($this->locales as $locale) {
             if ($locale !== $this->defaultLocale) {
@@ -105,5 +82,4 @@ class TranslationDataTransformer implements DataTransformerInterface
 
         return $data[$this->defaultLocale];
     }
-
 }
