@@ -7,14 +7,15 @@
 {% endblock translation_widget %}
 
 {%- block text_widget %}
-    {% if form.vars.attr.lang is defined %}
-        <div class="input-group {% if form.vars.attr.lang != form.vars.attr.default_locale %}hidden{% endif %}">
+    {% set attr = form.vars.attr ?: form.parent.vars.attr %}
+    {% if attr is defined and attr.lang is defined %}
+        <div class="input-group {% if attr.lang != attr.default_locale %}hidden{% endif %}">
             {% set attr = attr|merge({"aria-describedby" : form.vars.id ~ "_addon"}) %}
 
             {{- block('form_widget_simple') -}}
 
             <div class="input-group-addon" id="{{ form.vars.id }}_addon">
-                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ form.vars.attr.lang ~ '.svg') }}" width="30">
+                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ attr.lang ~ '.svg') }}" width="30">
             </div>
         </div>
     {% else %}
@@ -23,14 +24,15 @@
 {%- endblock text_widget %}
 
 {%- block textarea_widget %}
-    {% if form.vars.attr.lang is defined and attr.style != "display:none;" %}
-        <div class="input-group {% if form.vars.attr.lang != form.vars.attr.default_locale %}hidden{% endif %}">
+    {% set attr = form.vars.attr ?: form.parent.vars.attr %}
+    {% if attr is defined and attr.style is defined and attr.style != "display:none;" %}
+        <div class="input-group {% if attr.lang != attr.default_locale %}hidden{% endif %}">
             {% set attr = attr|merge({"aria-describedby" : form.vars.id ~ "_addon"}) %}
 
             {{- parent() -}}
 
             <div class="input-group-addon" id="{{ form.vars.id }}_addon">
-                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ form.vars.attr.lang ~ '.svg') }}" width="30">
+                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ attr.lang ~ '.svg') }}" width="30">
             </div>
         </div>
     {% else %}
@@ -39,11 +41,9 @@
 {%- endblock textarea_widget %}
 
 {%- block form_start -%}
-
     {{ parent() }}
 
     {% if form.vars.locales is defined and form.vars.locales|length > 1 %}
-
         <div id="{{ form.vars.id }}_btn_group_locales" style="margin-bottom: 40px">
             <ul class="nav nav-fill nav-tabs">
                 <li class="nav-item">
@@ -64,23 +64,24 @@
                 var form = document.{{ form.vars.name }};
                 var defaultLocale = '{{ form.vars.default_locale }}';
                 var languages = form.querySelectorAll('#{{ form.vars.id }}_btn_group_locales a[lang]');
-                var elements = form.querySelectorAll('input[lang], textarea[lang]');
+                var elements = form.querySelectorAll('input[lang], textarea[lang], div[lang][default_locale]');
 
                 function onChange(event) {
                     var currentLocale = event instanceof Event ? event.target.lang : defaultLocale;
 
                     Array.prototype.forEach.call(elements, function (element) {
-                        var div = element.parentNode;
-                        div.classList.add("hidden");
+                        var div = element.tagName === 'DIV' ? element : element.parentNode;
+
+                        div.classList.add('hidden');
                         if (currentLocale === element.lang) {
-                            div.classList.remove("hidden");
+                            div.classList.remove('hidden');
                         }
                     });
 
                     Array.prototype.forEach.call(languages, function (anchor) {
-                        anchor.parentNode.classList.remove("active");
+                        anchor.parentNode.classList.remove('active');
                         if (currentLocale === anchor.lang) {
-                            anchor.parentNode.classList.add("active");
+                            anchor.parentNode.classList.add('active');
                         }
                     });
                 }

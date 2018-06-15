@@ -44,6 +44,7 @@ class TranslationType extends AbstractType
     public function finishView(FormView $view, FormInterface $form, array $options)
     {
         parent::finishView($view, $form, $options);
+
         $rootFormView = $this->getRootFormView($view);
         $rootFormView->vars['locales'] = $this->locales;
         $rootFormView->vars['default_locale'] = $this->defaultLocale;
