@@ -62,10 +62,10 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
             $missingLocales = $this->processTranslatedRoutes($route, $name);
 
             foreach ($missingLocales as $locale) {
-                $path = sprintf('/%s%s', $locale, $route->getPath());
+                $url = sprintf('/%s%s', $locale, $route->getPath());
                 $defaults = ['_canonical_route' => $name, '_locale' => $locale];
                 $requirements = ['_locale' => $locale];
-                $this->routes[$name.'.'.$locale] = $this->cloneRoute($route, $path, $defaults, $requirements);
+                $this->routes[$name.'.'.$locale] = $this->cloneRoute($route, $url, $defaults, $requirements);
             }
         }
 
@@ -86,6 +86,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
         $seoRepository = $this->entityManager->getRepository(SeoInterface::class);
         $locales = array_combine($this->locales, $this->locales);
 
+        // Do not rewritte Page twice
         if ($name === 'krg_page_show') {
             return $locales;
         }
@@ -105,15 +106,14 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
             // Find custom Seo urls by locale
             if ($translations = $translatableRepository->findTranslations($seo)) {
                 foreach ($this->locales as $locale) {
-                    $defaultPath = sprintf('/%s%s', $locale, $route->getPath());
-
                     if (($url = ($translations[$locale]['url'] ?? null)) && $url !== $route->getPath()) {
                         $defaults = ['_canonical_route' => $name, '_locale' => $locale, '_seo_id' =>  $seo->getId()];
                         $requirements = ['_locale' => $locale];
                         $localizedRoute = $this->cloneRoute($route, $url, $defaults, $requirements);
 
+                        $path = sprintf('/%s%s', $locale, $route->getPath());
                         $this->routes[$name.'.'.$locale.'.redirect'] = $this
-                            ->cloneRoute($localizedRoute, $defaultPath)
+                            ->cloneRoute($localizedRoute, $path)
                             ->setDefaults([
                                 '_controller' => 'FrameworkBundle:Redirect:redirect',
                                 'route'       => $name.'.'.$locale,
@@ -122,7 +122,6 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
                             ])
                             ->setRequirements(['_locale' => $locale]);
 
-                        $route->addDefaults(['_force_rewritte' => true]);
                         $this->routes[$name.'.'.$locale] = $localizedRoute;
 
                         unset($locales[$locale]); // Localized route successfuly created
@@ -130,6 +129,9 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
                 }
             }
         }
+
+        // Create localized for default locale only if translated
+        unset($locales[$this->defaultLocale]);
 
         return $locales;
     }

@@ -42,6 +42,7 @@ class IntlExtension extends \Twig_Extension
         foreach ($suffixes as $suffix) {
             if (strstr($routeName, '.'.$suffix)) {
                 $routeName = str_replace('.'.$suffix, '', $routeName);
+                break;
             }
         }
 
@@ -49,6 +50,15 @@ class IntlExtension extends \Twig_Extension
         foreach ($routeParams as $key => $value) {
             if (preg_match('/^_/', $key)) {
                 unset($routeParams[$key]);
+            }
+        }
+
+        // Get additonal parameters from request
+        $route = $this->router->getRouteCollection()->get($routeName);
+        $routeVariables = $route->compile()->getVariables();
+        foreach ($routeVariables as $variable) {
+            if ($this->request->attributes->has($variable)) {
+                $routeParams[$variable] = $this->request->attributes->get($variable);
             }
         }
 
