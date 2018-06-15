@@ -15,7 +15,7 @@
             {{- block('form_widget_simple') -}}
 
             <div class="input-group-addon" id="{{ form.vars.id }}_addon">
-                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ attr.lang ~ '.svg') }}" width="30">
+                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ attr.lang ~ '.svg') }}" width="24">
             </div>
         </div>
     {% else %}
@@ -32,7 +32,7 @@
             {{- parent() -}}
 
             <div class="input-group-addon" id="{{ form.vars.id }}_addon">
-                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ attr.lang ~ '.svg') }}" width="30">
+                <img src="{{ asset('/bundles/krgintl/images/flags/' ~ attr.lang ~ '.svg') }}" width="24">
             </div>
         </div>
     {% else %}
@@ -45,14 +45,14 @@
 
     {% if form.vars.locales is defined and form.vars.locales|length > 1 %}
         <div id="{{ form.vars.id }}_btn_group_locales" style="margin-bottom: 40px">
-            <ul class="nav nav-fill nav-tabs">
+            <ul class="nav nav-fill nav-tabs" style="margin-left: 0">
                 <li class="nav-item">
-                    <h4 style="padding-right: 20px">{{ 'Language'|trans }}</h4>
+                    <h4 style="padding-right: 20px">{{ 'Languages'|trans }}</h4>
                 </li>
                 {% for locale in form.vars.locales %}
-                    <li class="nav-item {% if form.vars.default_locale == locale %} active {% endif %}">
+                    <li class="nav-item{% if form.vars.default_locale == locale %} active{% endif %}">
                         <a lang="{{ locale }}" href="#" class="nav-link">
-                            <img lang="{{ locale }}" src="{{ asset('/bundles/krgintl/images/flags/' ~ locale ~ '.svg') }}" width="30"/> {{ locale | upper }}
+                            <img lang="{{ locale }}" src="{{ asset('/bundles/krgintl/images/flags/' ~ locale ~ '.svg') }}" width="24"/> {{ locale | upper }}
                         </a>
                     </li>
                 {% endfor %}
