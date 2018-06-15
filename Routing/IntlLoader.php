@@ -118,7 +118,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
                                 '_controller' => 'FrameworkBundle:Redirect:redirect',
                                 'route'       => $name.'.'.$locale,
                                 '_locale'     => $locale,
-                                // 'permanent'   => true,
+                                'permanent'   => true,
                             ])
                             ->setRequirements(['_locale' => $locale]);
 
