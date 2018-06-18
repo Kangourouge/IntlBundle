@@ -16,33 +16,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class TranslationCollectionType extends AbstractType
 {
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var TranslatableListener
-     */
+    /** @var TranslatableListener */
     private $translatableListener;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $locales;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultLocale;
 
-    /**
-     * TranslationCollectionType constructor.
-     * @param EntityManagerInterface $entityManager
-     * @param TranslatableListener $translatableListener
-     * @param array $locales
-     * @param string $defaultLocale
-     */
     public function __construct(EntityManagerInterface $entityManager, TranslatableListener $translatableListener, array $locales, $defaultLocale)
     {
         $this->entityManager = $entityManager;
@@ -54,6 +39,7 @@ class TranslationCollectionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
+
         $dataTransformer = new TranslationDataTransformer($this->entityManager, $this->translatableListener, $this->locales, $this->defaultLocale, $options['entity'], $options['field']);
         $builder->addModelTransformer($dataTransformer);
 
@@ -61,7 +47,8 @@ class TranslationCollectionType extends AbstractType
             $builder->add($locale, $options['entry_type'], array_merge(
                 $options['entry_options'],
                 $locale !== $this->defaultLocale ? ['required' => false] : [],
-                ['attr' => ['lang' => $locale, 'default_locale' => $this->defaultLocale]]
+                ['attr' => ['lang' => $locale, 'default_locale' => $this->defaultLocale]],
+                ['label' => false]
             ));
         }
     }

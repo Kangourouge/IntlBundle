@@ -3,24 +3,18 @@
 namespace KRG\IntlBundle\Twig;
 
 use KRG\CmsBundle\Entity\SeoInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class IntlExtension extends \Twig_Extension
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     protected $locales;
 
-    /**
-     * @var null|\Symfony\Component\HttpFoundation\Request
-     */
+    /** @var null|\Symfony\Component\HttpFoundation\Request */
     protected $request;
 
-    /**
-     * @var RouterInterface
-     */
+    /** @var RouterInterface */
     protected $router;
 
     public function __construct(RequestStack $requestStack, RouterInterface $router, array $locales)
@@ -34,36 +28,50 @@ class IntlExtension extends \Twig_Extension
     {
         $nodes = [];
 
-        $_locale = $this->request->getLocale();
-
+        $locale = $this->request->getLocale();
         $routeName = $this->request->get('_route');
         $routeParams = $this->request->get('_route_params');
-
         $_seo = $this->request->get('_seo');
-        if ($_seo instanceof SeoInterface) {
+        if ($_seo instanceof SeoInterface and $_seo->getRouteName() === 'krg_page_show') {
             $routeName = $_seo->getUid();
             $routeParams = [];
         }
 
-        /* clean route parameters */
+        // Get unlocalized route
+        $suffixes = array_merge($this->locales, ['locale']);
+        foreach ($suffixes as $suffix) {
+            if (strstr($routeName, '.'.$suffix)) {
+                $routeName = str_replace('.'.$suffix, '', $routeName);
+                break;
+            }
+        }
+
+        // Clear route parameters
         foreach ($routeParams as $key => $value) {
             if (preg_match('/^_/', $key)) {
                 unset($routeParams[$key]);
             }
         }
 
-        foreach ($this->locales as $locale) {
+        // Get additonal parameters from request
+        $route = $this->router->getRouteCollection()->get($routeName);
+        $routeVariables = $route->compile()->getVariables();
+        foreach ($routeVariables as $variable) {
+            if ($this->request->attributes->has($variable)) {
+                $routeParams[$variable] = $this->request->attributes->get($variable);
+            }
+        }
 
-            $routeParams = array_merge($routeParams, ['_locale' => $locale]);
-
+        foreach ($this->locales as $_locale) {
+            $routeParams = array_merge($routeParams, ['_locale' => $_locale]);
             $nodes[] = [
                 'route'  => [
                     'name'   => $routeName,
                     'params' => $routeParams,
                 ],
-                'name'   => $locale,
-                'icon'  => 'icon-flag-' . $locale,
-                'locale' => $locale,
+                'name'   => $_locale,
+                'icon'  => 'icon-flag-' . $_locale,
+                'locale' => $_locale,
                 'url'    => $this->router->generate($routeName, $routeParams),
                 'roles'  => [],
                 'active' => $_locale === $locale,
@@ -71,6 +79,7 @@ class IntlExtension extends \Twig_Extension
         }
 
         $template = $environment->load($theme);
+
         return $template->renderBlock('intl', [
             'id'    => uniqid('krg_intl_'),
             'nodes' => $nodes,
