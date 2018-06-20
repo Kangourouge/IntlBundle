@@ -60,12 +60,18 @@ class TranslationType extends AbstractType
         $form = $event->getForm();
         $options = $form->getConfig()->getOptions();
 
+        $entity = $form->getParent()->getData();
+        if ($entity === null) {
+            $className = $form->getConfig()->getDataClass();
+            $entity = $this->entityManager->getClassMetadata($className)->newInstance();
+        }
+
         $form->add('translations', TranslationCollectionType::class, [
             'entry_type'    => $options['entry_type'],
             'entry_options' => array_merge($options['entry_options'], ['label' => false]),
-            'field'         => $form->getName(),
-            'entity'        => $form->getParent()->getData(),
-            'label'         => false,
+            'field' => $form->getName(),
+            'entity' => $entity,
+            'label' => false,
         ]);
     }
 
