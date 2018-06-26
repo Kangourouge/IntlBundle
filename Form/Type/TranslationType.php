@@ -62,7 +62,7 @@ class TranslationType extends AbstractType
 
         $entity = $form->getParent()->getData();
         if ($entity === null) {
-            $className = $form->getConfig()->getDataClass();
+            $className = $form->getParent()->getConfig()->getDataClass();
             $entity = $this->entityManager->getClassMetadata($className)->newInstance();
         }
 
