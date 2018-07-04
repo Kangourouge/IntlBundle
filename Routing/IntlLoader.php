@@ -7,6 +7,7 @@ use Gedmo\Translatable\Entity\Translation;
 use KRG\CmsBundle\Entity\SeoInterface;
 use KRG\CmsBundle\Routing\RoutingLoaderInterface;
 use Symfony\Component\Config\Loader\Loader;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\RouteCollection;
@@ -33,6 +34,9 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
     /** @var array */
     private $routes;
 
+    /** @var PropertyAccess */
+    private $propertyAccessor;
+
     public function __construct(EntityManagerInterface $entityManager, string $defaultLocale, array $locales)
     {
         $this->entityManager = $entityManager;
@@ -40,6 +44,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
         $this->defaultLocale = $defaultLocale;
         $this->locales = $locales;
         $this->seoClass = $this->entityManager->getMetadataFactory()->getMetadataFor(SeoInterface::class)->getName();
+        $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
         $this->routes = [];
     }
 
@@ -80,7 +85,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
     /**
      * Find alternative route paths from Seo entities
      */
-    protected function processTranslatedRoutes(Route $route, string $name)
+    protected function processTranslatedRoutes(Route &$route, string $name)
     {
         $translatableRepository = $this->entityManager->getRepository(Translation::class);
         $seoRepository = $this->entityManager->getRepository(SeoInterface::class);
@@ -107,22 +112,26 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
             if ($translations = $translatableRepository->findTranslations($seo)) {
                 foreach ($this->locales as $locale) {
                     if (($url = ($translations[$locale]['url'] ?? null)) && $url !== $route->getPath()) {
+                        $route = $this->updateSeoListWithTranslation($route, $seo, $translations[$locale], $locale);
                         $defaults = ['_canonical_route' => $name, '_locale' => $locale, '_seo_id' =>  $seo->getId()];
                         $requirements = ['_locale' => $locale];
                         $localizedRoute = $this->cloneRoute($route, $url, $defaults, $requirements);
 
-                        $path = sprintf('/%s%s', $locale, $route->getPath());
-                        $this->routes[$name.'.'.$locale.'.redirect'] = $this
-                            ->cloneRoute($localizedRoute, $path)
-                            ->setDefaults([
-                                '_controller' => 'FrameworkBundle:Redirect:redirect',
-                                'route'       => $name.'.'.$locale,
-                                '_locale'     => $locale,
-                                'permanent'   => true,
-                            ])
-                            ->setRequirements(['_locale' => $locale]);
-
+                        // Create redirection if translated route path are different
+                        $path = sprintf('/%s%s', $locale, rtrim($route->getPath(), '/'));
+                        if ($localizedRoute->getPath() !== $path) {
+                            $this->routes[$name.'.'.$locale.'.redirect'] = $this
+                                ->cloneRoute($localizedRoute, $path)
+                                ->setDefaults([
+                                    '_controller' => 'FrameworkBundle:Redirect:redirect',
+                                    'route'       => $name.'.'.$locale,
+                                    '_locale'     => $locale,
+                                    'permanent'   => true,
+                                ])
+                                ->setRequirements(['_locale' => $locale]);
+                        }
                         $this->routes[$name.'.'.$locale] = $localizedRoute;
+                        $this->routes[$name] = $route; // Initial route will be updated with additional _seo_list item
 
                         unset($locales[$locale]); // Localized route successfuly created
                     }
@@ -141,15 +150,42 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
         $clonedRoute = clone $route;
 
         if ($path) {
-            if ($path[strlen($path) - 1] === '/') {
-                $path = substr($path, 0, -1);
-            }
-            $clonedRoute->setPath($path);
+            $clonedRoute->setPath(rtrim($path, '/'));
         }
         $clonedRoute->addDefaults($defaults);
         $clonedRoute->addRequirements($requirements);
 
         return $clonedRoute;
+    }
+
+    /**
+     * Add transleted SEO to initial route _seo_list (used in resolver)
+     */
+    public function updateSeoListWithTranslation(Route $route, SeoInterface $seo, array $translation, string $locale)
+    {
+        $translatedSeo = clone $seo;
+        $routeClone = clone $route;
+
+        // Update Seo properties
+        foreach ($translation as $key => $value) {
+            $this->propertyAccessor->setValue($translatedSeo, $key, $value);
+        }
+
+        // Update compiled route
+        $routeClone->setPath($translatedSeo->getUrl());
+        $translatedSeo->setCompiledRoute($routeClone->compile());
+
+        // Add translation locale needed by resolver
+        $routeData = $translatedSeo->getRoute();
+        $routeData['params']['_locale'] = $locale;
+        $translatedSeo->setRoute($routeData);
+
+        // Merge into _seo_list
+        $_seos = $route->getDefault('_seo_list');
+        $_seos[] = $this->serializer->serialize($translatedSeo, 'json');
+        $route->setDefault('_seo_list', $_seos);
+
+        return $route;
     }
 
     public function supports($resource, $type = null)
