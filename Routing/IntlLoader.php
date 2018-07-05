@@ -43,7 +43,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
         $this->serializer = new Serializer([new PropertyNormalizer()], [new JsonEncoder()]);
         $this->defaultLocale = $defaultLocale;
         $this->locales = $locales;
-        $this->seoClass = $this->entityManager->getMetadataFactory()->getMetadataFor(SeoInterface::class)->getName();
+        $this->seoClass = $this->entityManager->getClassMetadata(SeoInterface::class)->getName();
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
         $this->routes = [];
     }
@@ -88,7 +88,6 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
     protected function processTranslatedRoutes(Route &$route, string $name)
     {
         $translatableRepository = $this->entityManager->getRepository(Translation::class);
-        $seoRepository = $this->entityManager->getRepository(SeoInterface::class);
         $locales = array_combine($this->locales, $this->locales);
 
         // Do not rewritte Page twice
@@ -96,11 +95,12 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
             return $locales;
         }
 
+        // Get translatable Seos
         $seos = [];
         if ($route->hasDefault('_seo_list')) {
             $seos = $route->getDefault('_seo_list');
-        } elseif ($route->hasDefault('_seo_id')) {
-            $seos = [$seoRepository->find($route->getDefault('_seo_id'))];
+        } elseif ($route->hasDefault('_seo')) {
+            $seos = [$route->getDefault('_seo')];
         }
 
         foreach ($seos as $seo) {
@@ -112,8 +112,8 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
             if ($translations = $translatableRepository->findTranslations($seo)) {
                 foreach ($this->locales as $locale) {
                     if (($url = ($translations[$locale]['url'] ?? null)) && $url !== $route->getPath()) {
-                        $route = $this->updateSeoListWithTranslation($route, $seo, $translations[$locale], $locale);
-                        $defaults = ['_canonical_route' => $name, '_locale' => $locale, '_seo_id' =>  $seo->getId()];
+                        list($route, $translatedSeo) = $this->getTranslatedRouteAndSeo($route, $seo, $translations[$locale], $locale);
+                        $defaults = ['_canonical_route' => $name, '_locale' => $locale, '_seo' => $this->serializer->serialize($translatedSeo, 'json')];
                         $requirements = ['_locale' => $locale];
                         $localizedRoute = $this->cloneRoute($route, $url, $defaults, $requirements);
 
@@ -161,8 +161,12 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
     /**
      * Add transleted SEO to initial route _seo_list (used in resolver)
      */
-    public function updateSeoListWithTranslation(Route $route, SeoInterface $seo, array $translation, string $locale)
+    public function getTranslatedRouteAndSeo(Route $route, SeoInterface $seo, array $translation, string $locale)
     {
+        if ($locale === $this->defaultLocale) {
+            return [$route, $seo];
+        }
+
         $translatedSeo = clone $seo;
         $routeClone = clone $route;
 
@@ -185,7 +189,7 @@ class IntlLoader extends Loader implements RoutingLoaderInterface
         $_seos[] = $this->serializer->serialize($translatedSeo, 'json');
         $route->setDefault('_seo_list', $_seos);
 
-        return $route;
+        return [$route, $translatedSeo];
     }
 
     public function supports($resource, $type = null)
