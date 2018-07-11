@@ -25,7 +25,7 @@ class KRGIntlExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load($config['legacy'] ? 'services_legacy.yml' : 'services.yml');
 
-        $container->setParameter('krg_intl_locales', array_merge(['%kernel.default_locale%'], $config['locales']));
+        $container->setParameter('krg_intl_locales', $config['locales']);
         $container->setParameter('krg_intl_cache_dir', $config['cache_dir']);
 
         if (!$config['legacy']) {

@@ -4,7 +4,7 @@
 # config.yml
 
 krg_intl:
-    locales: [en]
+    locales: [fr, en]
 
 twig:
     form_themes:
