@@ -68,10 +68,10 @@ class TranslationType extends AbstractType
 
         $form->add('translations', TranslationCollectionType::class, [
             'entry_type'    => $options['entry_type'],
-            'entry_options' => array_merge($options['entry_options'], ['label' => false]),
-            'field' => $form->getName(),
-            'entity' => $entity,
-            'label' => false,
+            'entry_options' => array_merge($options['entry_options'], ['label' => $form->getName()]),
+            'field'         => $form->getName(),
+            'entity'        => $entity,
+            'label'         => $form->getName(),
         ]);
     }
 

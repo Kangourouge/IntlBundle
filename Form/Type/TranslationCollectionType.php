@@ -2,17 +2,13 @@
 
 namespace KRG\IntlBundle\Form\Type;
 
-use KRG\IntlBundle\Form\DataTransformer\TranslationDataTransformer;
 use Doctrine\ORM\EntityManagerInterface;
-use Gedmo\Translatable\Entity\Translation;
 use Gedmo\Translatable\Translatable;
 use Gedmo\Translatable\TranslatableListener;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\FormView;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use KRG\IntlBundle\Form\DataTransformer\TranslationDataTransformer;
 
 class TranslationCollectionType extends AbstractType
 {
@@ -48,7 +44,7 @@ class TranslationCollectionType extends AbstractType
                 $options['entry_options'],
                 $locale !== $this->defaultLocale ? ['required' => false] : [],
                 ['attr' => ['lang' => $locale, 'default_locale' => $this->defaultLocale]],
-                ['label' => false]
+                ['label' => $options['label']]
             ));
         }
     }
@@ -56,6 +52,7 @@ class TranslationCollectionType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         parent::configureOptions($resolver);
+
         $resolver->setRequired('entry_type');
         $resolver->setRequired('entry_options');
         $resolver->setRequired('entity');

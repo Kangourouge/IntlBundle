@@ -1,10 +1,21 @@
 {% use 'EasyAdminBundle:form:bootstrap_3_horizontal_layout.html.twig' %}
 
-{% block translation_widget %}
+{% block translation_row %}
     {% for child in form.translations %}
-        {{ form_widget(child) }}
+        {% set attr = child.vars.attr|length > 0 ? child.vars.attr : form.vars.attr %}
+        {% if attr.lang is defined and attr.default_locale is defined %}
+            <div lang="{{ attr.lang }}" class="field-group-translation {% if attr.lang != attr.default_locale %}hidden{% endif %}">
+                {% if form.vars.label or child.vars.label and form.vars.label is not same as(false) %}
+                    {{ form_row(child) }}
+                {% else %}
+                    {{ form_widget(child) }}
+                {% endif %}
+            </div>
+        {% else %}
+            {{ form_row(child) }}
+        {% endif %}
     {% endfor %}
-{% endblock translation_widget %}
+{% endblock translation_row %}
 
 {%- block text_widget %}
     {% set attr = form.vars.attr|length > 0 ? form.vars.attr : form.parent.vars.attr %}
@@ -66,7 +77,7 @@
                 var form = document.{{ form.vars.name }};
                 var defaultLocale = '{{ form.vars.default_locale }}';
                 var languages = form.querySelectorAll('#{{ form.vars.id }}_btn_group_locales button[lang]');
-                var elements = form.querySelectorAll('input[lang], textarea[lang], div[lang][default_locale]');
+                var elements = form.querySelectorAll('input[lang], textarea[lang], .field-group-translation[lang], div[lang][default_locale]');
 
                 function onChange(event) {
                     var currentLocale = event instanceof Event ? event.target.lang : defaultLocale;
