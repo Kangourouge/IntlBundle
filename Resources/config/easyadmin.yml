@@ -3,6 +3,9 @@ easy_admin:
         menu:
             -
                 label: 'Intl'
+                group: 'Intl'
+                priority: 0
                 roles: ['ROLE_INTL']
+                icon: 'globe'
                 children:
-                    - { label: 'Translation', route: 'krg_intl_admin_import', icon: 'globe' }
+                    - { label: 'Trans. Import/Export', route: 'krg_intl_admin_import', icon: 'upload' }

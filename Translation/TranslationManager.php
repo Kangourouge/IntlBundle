@@ -135,7 +135,7 @@ class TranslationManager
                         $foreignTextKey = $foreignKey;
 
                         if ($objectClass === '_source') {
-                            $foreignKey = sha1($foreignKey);
+                            $foreignKey = $foreignTextKey;
                         }
 
                         $this->insertOrUpdate($conn, $rows, $tableName, $locale, $objectClass, $field, $foreignKey, $foreignTextKey, $content);
@@ -274,6 +274,10 @@ class TranslationManager
         ];
 
         $key = self::getKey($data);
+
+        if ($objectClass === '_source') {
+            $data['foreign_key'] = sha1($foreignKey);
+        }
 
         if (!isset($rows[$key])) {
             $rows[$key] = $data;
