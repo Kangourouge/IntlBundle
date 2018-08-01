@@ -28,9 +28,12 @@ class IntlExtension extends \Twig_Extension
     {
         $nodes = [];
 
-        $locale = $this->request->getLocale();
         $routeName = $this->request->get('_route');
-        $routeParams = $this->request->get('_route_params');
+        if (!$routeName) {
+            return;
+        }
+        $locale = $this->request->getLocale();
+        $routeParams = $this->request->get('_route_params') ?: [];
         $_seo = $this->request->get('_seo');
         if ($_seo instanceof SeoInterface and $_seo->getRouteName() === 'krg_page_show') {
             $routeName = $_seo->getUid();
