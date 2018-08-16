@@ -64,6 +64,7 @@ class TranslationType extends AbstractType
         if ($entity === null) {
             $className = $form->getParent()->getConfig()->getDataClass();
             $entity = $this->entityManager->getClassMetadata($className)->newInstance();
+            $form->getParent()->setData($entity);
         }
 
         $form->add('translations', TranslationCollectionType::class, [
