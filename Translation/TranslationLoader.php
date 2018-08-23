@@ -59,11 +59,13 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
 
             $rows = $dql->execute(['objectClass' => '_source']);
 
-            foreach ($rows as $row) {
-                $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
-                $fd = fopen($filename, 'w');
-                fwrite($fd, '-- empty line --'.PHP_EOL);
-                fclose($fd);
+            if (file_exists($this->translationCacheDir)) {
+                foreach ($rows as $row) {
+                    $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
+                    $fd = fopen($filename, 'w');
+                    fwrite($fd, '-- empty line --'.PHP_EOL);
+                    fclose($fd);
+                }
             }
         } catch (\Exception $exception) {
             // TODO handle exception
