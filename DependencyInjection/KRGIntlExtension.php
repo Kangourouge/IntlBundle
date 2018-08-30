@@ -35,6 +35,9 @@ class KRGIntlExtension extends Extension
                 @mkdir($cacheDir, 0775, true);
 
                 $bundleNames = array_keys($container->getParameter('kernel.bundles'));
+                foreach ($config['domains'] as $domain) {
+                    array_push($bundleNames, $domain);
+                }
                 array_push($bundleNames, 'messages');
 
                 foreach ($bundleNames as $bundleName) {

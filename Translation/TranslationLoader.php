@@ -42,7 +42,14 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
 
     public function clear($cacheDir)
     {
-        $this->warmUp($cacheDir);
+        if (file_exists($this->translationCacheDir) && is_dir($this->translationCacheDir)) {
+            $objects = scandir($this->translationCacheDir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    unlink($this->translationCacheDir."/".$object);
+                }
+            }
+        }
     }
 
     public function warmUp($cacheDir)
@@ -62,9 +69,11 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
             if (file_exists($this->translationCacheDir)) {
                 foreach ($rows as $row) {
                     $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
-                    $fd = fopen($filename, 'w');
-                    fwrite($fd, '-- empty line --'.PHP_EOL);
-                    fclose($fd);
+                    if (!file_exists($filename)) {
+                        $fd = fopen($filename, 'w');
+                        fwrite($fd, '-- empty line --'.PHP_EOL);
+                        fclose($fd);
+                    }
                 }
             }
         } catch (\Exception $exception) {
@@ -101,7 +110,6 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
 
             return $messageCatalogue;
         } catch (\Exception $exception) {
-            // TODO handle exception
         }
     }
 }
