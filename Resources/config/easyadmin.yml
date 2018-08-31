@@ -1,11 +1,15 @@
+imports:
+    - { resource: easyadmin/ }
+
 easy_admin:
     design:
         menu:
             -
-                label: 'Intl'
+                label: 'menu.intl'
                 group: 'Intl'
                 priority: 0
                 roles: ['ROLE_INTL']
                 icon: 'globe'
                 children:
+                    - { entity: 'Translation', icon: 'search', label: 'menu.translation' }
                     - { label: 'Trans. Import/Export', route: 'krg_intl_admin_import', icon: 'upload' }

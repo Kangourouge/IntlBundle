@@ -1,0 +1,30 @@
+easy_admin:
+    entities:
+        Translation:
+            class: 'KRG\IntlBundle\Entity\TranslationInterface'
+            disabled_actions: ['new']
+            list:
+                title: 'menu.translation'
+                dql_filter: "entity.objectClass = '_source'"
+                fields:
+                    - id
+                    - locale
+                    -
+                        property: content
+                        label: 'intl.translation'
+                        domain: 'null'
+                    -
+                        property: foreignTextKey
+                        label: 'intl.foreignTextKey'
+                        domain: 'null'
+                    - { property: 'objectClass', label: 'intl.objectClass'}
+                    - { property: 'field', label: 'intl.field'}
+            search:
+                title:  '<i class="fa fa-search"></i> Traductions'
+            form:
+                fields:
+                    - { type: 'group', label: 'menu.translation' }
+                    - { property: 'locale', type_options: { disabled: true } }
+                    - { property: 'field', type_options: { disabled: true }, label: 'intl.field' }
+                    - { property: 'foreignTextKey', type_options: { disabled: true }, label: 'intl.foreignTextKey' }
+                    - { property: 'content', type: 'textarea', type_options: { attr: { rows: 10 }}, label: 'intl.translation' }

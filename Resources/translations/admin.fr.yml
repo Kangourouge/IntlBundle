@@ -1,0 +1,11 @@
+menu:
+  intl: Traductions
+  translation: Traduction
+
+intl:
+  field: Domaine
+  foreignTextKey: Clé
+  translation: Traduction
+  objectClass: Classe
+
+Export translations: Exporter les traductions
