@@ -2,90 +2,65 @@
 
 namespace KRG\IntlBundle\Translation;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use Gedmo\Translatable\Translatable;
 use KRG\IntlBundle\Entity\TranslationInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Gedmo\Translatable\Translatable;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\Catalogue\MergeOperation;
 use Symfony\Component\Translation\Extractor\ExtractorInterface;
-use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Reader\TranslationReaderInterface;
 
 class TranslationManager
 {
-    /**
-     * @var KernelInterface
-     */
+    /** @var KernelInterface */
     private $kernel;
 
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var ClassMetadata
-     */
+    /** @var ClassMetadata */
     private $classMetadata;
 
-    /**
-     * @var TranslationReaderInterface
-     */
+    /** @var TranslationReaderInterface */
     private $reader;
 
-    /**
-     * @var ExtractorInterface
-     */
+    /** @var ExtractorInterface */
     private $extractor;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultLocale;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $translationCacheDir;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $locales;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultTransPath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $defaultViewsPath;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private static $header = ['locale', 'object_class', 'field', 'foreign_key', 'content'];
 
-    /**
-     * TranslationManager constructor.
-     *
-     * @param KernelInterface $kernel
-     * @param EntityManagerInterface $entityManager
-     * @param TranslationReaderInterface $reader
-     * @param ExtractorInterface $extractor
-     * @param string $defaultLocale
-     * @param array $locales
-     * @param string $defaultTransPath
-     * @param string $defaultViewsPath
-     */
-    public function __construct(KernelInterface $kernel, EntityManagerInterface $entityManager, TranslationReaderInterface $reader, ExtractorInterface $extractor, string $defaultLocale, array $locales, string $translationCacheDir = null, string $defaultTransPath = null, string $defaultViewsPath = null)
-    {
+    public function __construct(
+        KernelInterface $kernel,
+        EntityManagerInterface $entityManager,
+        TranslationReaderInterface $reader,
+        ExtractorInterface $extractor,
+        string $defaultLocale,
+        array $locales,
+        string $translationCacheDir = null,
+        string $defaultTransPath = null,
+        string $defaultViewsPath = null
+    ) {
         $this->kernel = $kernel;
         $this->entityManager = $entityManager;
         $this->reader = $reader;
@@ -95,15 +70,12 @@ class TranslationManager
         $this->translationCacheDir = $translationCacheDir;
         $this->defaultTransPath = $defaultTransPath;
         $this->defaultViewsPath = $defaultViewsPath;
-
         $this->classMetadata = $this->entityManager->getClassMetadata(TranslationInterface::class);
     }
 
     /**
      * @param UploadedFile $file
-     *
      * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Exception
      */
     public function import(UploadedFile $file)
     {
@@ -111,7 +83,6 @@ class TranslationManager
 
         if (($handle = fopen($file->getPathname(), "r")) !== false) {
             try {
-
                 $data = fgetcsv($handle, 0, ",");
 
                 if ($data !== self::$header) {
@@ -131,6 +102,7 @@ class TranslationManager
                         if (count($data) !== 5) {
                             throw new \InvalidArgumentException('CSV not valid');
                         }
+
                         list($locale, $objectClass, $field, $foreignKey, $content) = $data;
                         $foreignTextKey = $foreignKey;
 
@@ -153,6 +125,8 @@ class TranslationManager
 
     /**
      * @return \SplFileInfo
+     * @throws \Doctrine\Common\Annotations\AnnotationException
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function export()
     {
@@ -185,11 +159,8 @@ class TranslationManager
      */
     public function getTranslatableFields()
     {
-
         $fields = array();
-
         $annotationReader = new AnnotationReader();
-
         $classMetadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
         /** @var ClassMetadata $classMetadata */
@@ -197,6 +168,7 @@ class TranslationManager
             if ($classMetadata->isMappedSuperclass) {
                 continue;
             }
+
             $reflectionClass = $classMetadata->getReflectionClass();
             if ($reflectionClass->implementsInterface(Translatable::class)) {
                 foreach ($reflectionClass->getProperties() as $reflectionProperty) {
@@ -218,7 +190,6 @@ class TranslationManager
 
     /**
      * @param array $data
-     *
      * @return string
      */
     private static function getKey(array $data)
@@ -228,39 +199,15 @@ class TranslationManager
 
     /**
      * @param Connection $conn
-     * @param $tableName
-     *
-     * @return array
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function loadTranslations(Connection $conn, $tableName)
-    {
-        $data = $conn->executeQuery(sprintf('SELECT * FROM %s', $tableName));
-
-        $rows = [];
-        foreach ($data as $_data) {
-            if ($_data['object_class'] === '_source') {
-                $_data['foreign_key'] = $_data['foreign_text_key'];
-            }
-            unset($_data['foreign_text_key']);
-            unset($_data['id']);
-            $rows[self::getKey($_data)] = $_data;
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param Connection $conn
-     * @param array $rows
-     * @param $tableName
-     * @param $locale
-     * @param $objectClass
-     * @param $field
-     * @param $foreignKey
-     * @param $content
-     *
-     * @return int
+     * @param array      $rows
+     * @param            $tableName
+     * @param            $locale
+     * @param            $objectClass
+     * @param            $field
+     * @param            $foreignKey
+     * @param            $foreignTextKey
+     * @param            $content
+     * @return bool
      */
     private function insertOrUpdate(Connection $conn, array &$rows, $tableName, $locale, $objectClass, $field, $foreignKey, $foreignTextKey, $content)
     {
@@ -295,22 +242,20 @@ class TranslationManager
 
     /**
      * @param Connection $conn
-     * @param string $tableName
-     *
+     * @param string     $tableName
      * @return array
+     * @throws \Doctrine\Common\Annotations\AnnotationException
      * @throws \Doctrine\DBAL\DBALException
      */
     private function loadEntityTranslations(Connection $conn, string $tableName)
     {
         $query = [];
         foreach ($this->getTranslatableFields() as $field) {
-            $query[] = sprintf(
-                'SELECT \'%3$s\' AS object_class, \'%1$s\' AS field, id AS foreign_key, %2$s AS content FROM %4$s WHERE %2$s IS NOT NULL',
+            $query[] = sprintf('SELECT \'%3$s\' AS object_class, \'%1$s\' AS field, id AS foreign_key, %2$s AS content FROM %4$s WHERE %2$s IS NOT NULL',
                 $field['fieldName'],
                 $field['columnName'],
                 addslashes($field['className']),
-                $field['tableName']
-            );
+                $field['tableName']);
         }
         $data = $conn->executeQuery(implode(' UNION ', $query))->fetchAll();
 
@@ -327,8 +272,7 @@ class TranslationManager
 
     /**
      * @param Connection $conn
-     * @param string $tableName
-     *
+     * @param string     $tableName
      * @return array
      */
     private function loadSourceTranslations(Connection $conn, string $tableName)
@@ -366,7 +310,7 @@ class TranslationManager
             $currentCatalogue = $this->loadCurrentMessages($locale, $transPaths);
 
             // Merge defined and extracted messages to get all message ids
-            $mergeOperation = new MergeOperation($extractedCatalogue, $currentCatalogue);
+            $mergeOperation = new MergeOperation($currentCatalogue, $extractedCatalogue);
             $messages = $mergeOperation->getResult()->all();
 
             foreach ($messages as $domain => $_messages) {
@@ -387,14 +331,37 @@ class TranslationManager
     }
 
     /**
+     * @param Connection $conn
+     * @param            $tableName
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function loadTranslations(Connection $conn, $tableName)
+    {
+        $data = $conn->executeQuery(sprintf('SELECT * FROM %s', $tableName));
+
+        $rows = [];
+        foreach ($data as $_data) {
+            if ($_data['object_class'] === '_source') {
+                $_data['foreign_key'] = $_data['foreign_text_key'];
+            }
+            unset($_data['foreign_text_key']);
+            unset($_data['id']);
+            $rows[self::getKey($_data)] = $_data;
+        }
+
+        return $rows;
+    }
+
+    /**
      * @param string $locale
-     * @param array $transPaths
-     *
+     * @param array  $transPaths
      * @return MessageCatalogue
      */
     private function extractMessages($locale, $transPaths)
     {
         $extractedCatalogue = new MessageCatalogue($locale);
+
         foreach ($transPaths as $path) {
             if (is_dir($path)) {
                 try {
@@ -409,13 +376,13 @@ class TranslationManager
 
     /**
      * @param string $locale
-     * @param array $transPaths
-     *
+     * @param array  $transPaths
      * @return MessageCatalogue
      */
     private function loadCurrentMessages($locale, $transPaths)
     {
         $currentCatalogue = new MessageCatalogue($locale);
+
         foreach ($transPaths as $path) {
             if (is_dir($path)) {
                 try {

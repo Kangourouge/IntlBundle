@@ -4,35 +4,22 @@ namespace KRG\IntlBundle\Translation;
 
 use Doctrine\ORM\EntityManagerInterface;
 use KRG\IntlBundle\Entity\TranslationInterface;
-use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
-use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
-use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\Translation\Loader\LoaderInterface;
+use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
+use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 
 class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheClearerInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
+    /** @var EntityManagerInterface */
     private $entityManager;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $locales;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $translationCacheDir;
 
-    /**
-     * TranslationLoader constructor.
-     *
-     * @param EntityManagerInterface $entityManager
-     * @param array $locales
-     * @param string $translationCacheDir
-     */
     public function __construct(EntityManagerInterface $entityManager, array $locales, string $translationCacheDir)
     {
         $this->entityManager = $entityManager;
@@ -45,8 +32,8 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
         if (file_exists($this->translationCacheDir) && is_dir($this->translationCacheDir)) {
             $objects = scandir($this->translationCacheDir);
             foreach ($objects as $object) {
-                if ($object != "." && $object != "..") {
-                    unlink($this->translationCacheDir."/".$object);
+                if ($object != '.' && $object != '..') {
+                    unlink($this->translationCacheDir.'/'.$object);
                 }
             }
         }
@@ -55,8 +42,6 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
     public function warmUp($cacheDir)
     {
         try {
-            $repository = $this->entityManager->getRepository(TranslationInterface::class);
-
             $dql = $this->entityManager->createQuery(
                 sprintf(
                     'SELECT DISTINCT t.locale, t.field FROM %s t WHERE t.objectClass=:objectClass',
@@ -81,23 +66,16 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
         }
     }
 
-    public function isOptional()
-    {
-        return false;
-    }
-
     public function load($resource, $locale, $domain = 'messages')
     {
         try {
-            $repository = $this->entityManager->getRepository(TranslationInterface::class);
-
             $dql = $this->entityManager->createQuery(
                 sprintf(
                     'SELECT t.foreignTextKey, t.content
-                FROM %s t
-                WHERE t.objectClass=:objectClass
-                AND t.locale=:locale
-                AND t.field=:field',
+                    FROM %s t
+                    WHERE t.objectClass=:objectClass
+                    AND t.locale=:locale
+                    AND t.field=:field',
                     TranslationInterface::class
                 )
             );
@@ -111,5 +89,10 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
             return $messageCatalogue;
         } catch (\Exception $exception) {
         }
+    }
+
+    public function isOptional()
+    {
+        return false;
     }
 }
