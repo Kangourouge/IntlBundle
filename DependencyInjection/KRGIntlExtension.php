@@ -5,6 +5,7 @@ namespace KRG\IntlBundle\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -28,6 +29,17 @@ class KRGIntlExtension extends Extension
         $container->setParameter('krg_intl_locales', $config['locales']);
         $container->setParameter('krg_intl_cache_dir', $config['cache_dir']);
 
+        // Get all app translations files
+        $domains = array_merge(['messages'], $config['domains']);
+        $translationDir = $container->getParameter('kernel.root_dir').'/Resources/translations';
+        if (is_dir($translationDir)) {
+            $finder = new Finder();
+            foreach($finder->name('*.yml')->in($translationDir) as $file) {
+                $domains[] = explode('.', $file->getFilename())[0];
+            }
+        }
+        $domains = array_unique($domains);
+
         if (!$config['legacy']) {
             $cacheDir = preg_replace('/%kernel\.cache_dir%/', $container->getParameter('kernel.cache_dir'), $config['cache_dir']);
 
@@ -35,10 +47,9 @@ class KRGIntlExtension extends Extension
                 @mkdir($cacheDir, 0775, true);
 
                 $bundleNames = array_keys($container->getParameter('kernel.bundles'));
-                foreach ($config['domains'] as $domain) {
+                foreach ($domains as $domain) {
                     array_push($bundleNames, $domain);
                 }
-                array_push($bundleNames, 'messages');
 
                 foreach ($bundleNames as $bundleName) {
                     foreach ($config['locales'] as $locale) {
