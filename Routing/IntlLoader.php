@@ -9,10 +9,10 @@ use KRG\CmsBundle\Routing\RoutingLoaderInterface;
 use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Routing\Route;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 class IntlLoader extends Loader implements RoutingLoaderInterface
 {

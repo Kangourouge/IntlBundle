@@ -3,8 +3,8 @@
 namespace KRG\IntlBundle\Twig;
 
 use KRG\CmsBundle\Entity\SeoInterface;
-use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 
 class IntlExtension extends \Twig_Extension
 {

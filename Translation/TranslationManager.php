@@ -2,17 +2,17 @@
 
 namespace KRG\IntlBundle\Translation;
 
-use KRG\IntlBundle\Entity\TranslationInterface;
-use Gedmo\Translatable\Translatable;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\Mapping\ClassMetadata;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Translation\MessageCatalogue;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Gedmo\Translatable\Translatable;
+use KRG\IntlBundle\Entity\TranslationInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Translation\Catalogue\MergeOperation;
 use Symfony\Component\Translation\Extractor\ExtractorInterface;
+use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Reader\TranslationReaderInterface;
 
 class TranslationManager
