@@ -41,6 +41,8 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
 
     public function warmUp($cacheDir)
     {
+        $rows = [];
+
         try {
             $dql = $this->entityManager->createQuery(
                 sprintf(
@@ -50,24 +52,25 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
             );
 
             $rows = $dql->execute(['objectClass' => '_source']);
+        } catch (\Exception $exception) {
+        }
 
-            if (file_exists($this->translationCacheDir)) {
-                foreach ($rows as $row) {
-                    $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
-                    if (!file_exists($filename)) {
-                        $fd = fopen($filename, 'w');
-                        fwrite($fd, '-- empty line --'.PHP_EOL);
-                        fclose($fd);
-                    }
+        if (file_exists($this->translationCacheDir)) {
+            foreach ($rows as $row) {
+                $filename = sprintf('%s/%s.%s.db', $this->translationCacheDir, $row['field'], $row['locale']);
+                if (!file_exists($filename)) {
+                    $fd = fopen($filename, 'w');
+                    fwrite($fd, '-- empty line --'.PHP_EOL);
+                    fclose($fd);
                 }
             }
-        } catch (\Exception $exception) {
-            // TODO handle exception
         }
     }
 
     public function load($resource, $locale, $domain = 'messages')
     {
+        $rows = [];
+
         try {
             $dql = $this->entityManager->createQuery(
                 sprintf(
@@ -81,14 +84,14 @@ class TranslationLoader implements LoaderInterface, CacheWarmerInterface, CacheC
             );
 
             $rows = $dql->execute(['locale' => $locale, 'objectClass' => '_source', 'field' => $domain]);
-            $messages = array_column($rows, 'content', 'foreignTextKey');
-
-            $messageCatalogue = new MessageCatalogue($locale);
-            $messageCatalogue->add($messages, $domain);
-
-            return $messageCatalogue;
         } catch (\Exception $exception) {
         }
+
+        $messages = array_column($rows, 'content', 'foreignTextKey');
+        $messageCatalogue = new MessageCatalogue($locale);
+        $messageCatalogue->add($messages, $domain);
+
+        return $messageCatalogue;
     }
 
     public function isOptional()
