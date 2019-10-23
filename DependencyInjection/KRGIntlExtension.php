@@ -2,6 +2,7 @@
 
 namespace KRG\IntlBundle\DependencyInjection;
 
+use KRG\IntlBundle\Controller\AdminController;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
@@ -58,6 +59,10 @@ class KRGIntlExtension extends Extension
                     }
                 }
             }
+        }
+
+        if (!class_exists('\EasyCorp\Bundle\EasyAdminBundle\Controller\AdminController')) {
+            $container->removeDefinition(AdminController::class);
         }
     }
 }
