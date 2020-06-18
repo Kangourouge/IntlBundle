@@ -1,4 +1,8 @@
-# IntlBundle
+# [LEGACY] IntlBundle
+
+**abandoned!**
+
+Use [intl component](https://github.com/symfony/intl) instead.
 
 ```yaml
 # config.yml
