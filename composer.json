@@ -22,5 +22,6 @@
       "KRG\\IntlBundle": ""
     }
   },
-  "target-dir" : "KRG/IntlBundle"
+  "target-dir": "KRG/IntlBundle",
+  "abandoned": "symfony/intl"
 }
